@@ -1,39 +1,52 @@
-function w = kFolds(In, Out, p_min, p_max, k)
+function [best_p, old_w] = kFolds(In, Out, p_min, p_max, k)
     [~, n] = size(In);
     
     split = floor(n / k); %avoid float indices
-    best_p = 1;
-    
-    for p1 = p_min:p_max
-        for p2 = p_min:p_max
-            current_error = [0; 0];
+    best_p = [1, 1];
+    previous_error = [Inf; Inf];
+    old_w = cell(1, 3);
+    for p = p_min:p_max
         
-            for i = 1:k-1
+        current_error = [0; 0];
         
-                %split both input and output into training and test data
-                trainingInData = In;
-                testInData = trainingInData(:, [i*split : (i+1)*split-1]);
-                trainingInData(:, [i*split : (i+1)*split-1]) = [];
+        for i = 1:k-1
         
-                trainingOutData = Out;
-                testOutData = trainingOutData(:, [i*split : (i+1)*split-1]);
-                trainingOutData(:, [i*split : (i+1)*split-1]) = [];
-        
-        
-                %Train weights
-                w_new = linReg(trainingInData, trainingOutData, p1, p2);
-        
-                %Find error using test data
-                phi = makePhi(testInData, max(p1, p2));
-                predictions = w_new * phi;
-                error = linRegError(testOutData, predictions);
-                current_error = current_error + error;
-            
-        
-            end
+            %split both input and output into training and test data
+            trainingInData = In;
+            testInData = trainingInData(:, [i*split : (i+1)*split-1]);
+            trainingInData(:, [i*split : (i+1)*split-1]) = [];
+
+            trainingOutData = Out;
+            testOutData = trainingOutData(:, [i*split : (i+1)*split-1]);
+            trainingOutData(:, [i*split : (i+1)*split-1]) = [];
+
+
+            %Train weights
+            w = linReg(trainingInData, trainingOutData, p);
+
+            %Find error using test data
+            phi = makePhi(testInData, p);
+            predictions = w * phi;
+            error = linRegError(testOutData, predictions);
+            current_error = current_error + error;
             
             
         end
+        
+        %Check if current degree is better than the previous best
+        if current_error(1) < previous_error(1)
+            previous_error(1) = current_error(1);
+            best_p(1) = p;
+            old_w{1} = w(1, :)';
+            old_w{2} = w(2, :)';
+        end
+        
+        if current_error(2) < previous_error(2)
+            previous_error(2) = current_error(2);
+            best_p(2) = p;
+            old_w{3} = w(3, :)';
+        end
+        
     end
 
 end
@@ -49,14 +62,8 @@ function error = linRegError(Out, pred)
     error = sum(diff, 2);
 end
 
-function w = linReg(In, Out, p1, p2)
-    max_p = max(p1, p2);
-    phi = makePhi(In, max_p);
-    
-    %Split calculation of weights in two because of the different p's
-    w_trans = Out(1:2, :) * pinv(phi(1:3*p1 + 1, :));
-    w_rot = Out(3, :) * pinv(phi(1:3*p2 + 1, :));
-    
-    %Concatenate and zero pad if needed
-    w = [w_trans, zeros(2, 3*(max_p - p1)); w_rot, zeros(1, 3*(max_p - p2))];
+function w = linReg(In, Out, p)
+    phi = makePhi(In, p);
+    w = Out * pinv(phi);
+
 end

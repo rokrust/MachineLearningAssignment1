@@ -1,17 +1,10 @@
-load('Data.mat');
-%Input
-%v
-%w
+%optimal values 4, 1 for k = 5 and k = 2
 
-%Output
-%x
-%y
-%theta
+function par = Exercise1(k)
+    load('Data.mat');
 
+    p_max = 6;
+    p_min = 1;
 
-k = 5;
-p_max = 6;
-p_min = 1;
-
-
-kFolds(Input, Output, p_min, p_max, k);
+    [p, par] = kFolds(Input, Output, p_min, p_max, k);
+end
