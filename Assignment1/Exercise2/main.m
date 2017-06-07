@@ -1,5 +1,5 @@
 d_max = 60;
-%[best_d, class_err, conf_mat] = Exercise2(d_max);
+[best_d, class_err, conf_mat] = Exercise2(d_max);
 
 %best_d 48
 %err 0.0362
