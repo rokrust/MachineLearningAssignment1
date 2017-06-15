@@ -10,7 +10,8 @@ function Exercise3_kmeans(gesture, clusters, k)
 
     
     while prev_distortion - distortion > 10^(-6)
-        prev_distortion = distortion;
+        prev_distortion = distortion;        
+        labels = cell(1, k);
         
         %label that shit
         for p = 1:n*samples
@@ -20,7 +21,6 @@ function Exercise3_kmeans(gesture, clusters, k)
         end
         
         %Recalculate cluster means
-        labels = cell(1, k);
         clusters = clusterMean(labels);
         
         distortion = calculate_distortion(labels, clusters);
@@ -28,17 +28,6 @@ function Exercise3_kmeans(gesture, clusters, k)
     
     plotClusters(labels, clusters);
     
-end
-
-function plotClusters(labels, clusters)
-    rotate3d on;
-    hold on;
-    colors = ['blue', 'black', 'red', 'green', 'magenta', 'yellow', 'cyan'];
-    for i = 1:size(colors, 1)
-        scatter3(labels{i}(:, 1), labels{i}(:, 2), labels{i}(:, 3), colors(i));
-        scatter3(clusters(:, 1), clusters(:, 2), clusters(:, 3), colors(i));
-    end
-
 end
 
 function closest_cluster = closestCluster(x, clusters)
